@@ -1,0 +1,28 @@
+{
+  "name": "imc-terminal-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.0",
+    "axios": "^1.7.7",
+    "lightweight-charts": "^4.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8",
+    "@vitejs/plugin-react": "^4.3.2",
+    "vitest": "^2.1.1",
+    "@types/react": "^18.3.9",
+    "@types/react-dom": "^18.3.0",
+    "@testing-library/react": "^16.0.1",
+    "jsdom": "^25.0.1"
+  }
+}

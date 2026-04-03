@@ -1,0 +1,4 @@
+day,timestamp,buyer,seller,symbol,currency,price,quantity
+-2,100,A,B,EMERALDS,USD,10002,2
+-2,101,C,D,TOMATOES,USD,5002,3
+-2,102,E,F,EMERALDS,USD,9999,4

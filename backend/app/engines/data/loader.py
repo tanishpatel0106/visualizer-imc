@@ -31,10 +31,25 @@ class DataLoader:
         trades = sorted(str(x) for x in p.glob("trades*.csv"))
         return {"prices": prices, "trades": trades}
 
+    def _read_csv_flexible(self, file_path: str) -> pd.DataFrame:
+        # Tutorial datasets are frequently `;` separated; use sniffer-based parsing.
+        return pd.read_csv(file_path, sep=None, engine="python")
+
+    def _empty_price_frame(self) -> pd.DataFrame:
+        cols = PRICE_REQUIRED + [
+            "bid_price_2", "bid_volume_2", "bid_price_3", "bid_volume_3",
+            "ask_price_2", "ask_volume_2", "ask_price_3", "ask_volume_3",
+        ]
+        return pd.DataFrame(columns=cols)
+
+    def _empty_trade_frame(self) -> pd.DataFrame:
+        cols = TRADE_REQUIRED + ["day", "buyer", "seller", "currency"]
+        return pd.DataFrame(columns=cols)
+
     def _read_prices(self, files: List[str]) -> pd.DataFrame:
         frames = []
         for f in files:
-            df = pd.read_csv(f)
+            df = self._read_csv_flexible(f)
             missing = [c for c in PRICE_REQUIRED if c not in df.columns]
             if missing:
                 raise ValueError(f"Price file {f} missing columns: {missing}")
@@ -48,7 +63,7 @@ class DataLoader:
                         df[vcol] = pd.NA
             df["product"] = df["product"].astype(str).str.upper()
             frames.append(df)
-        out = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        out = pd.concat(frames, ignore_index=True) if frames else self._empty_price_frame()
         if out.empty:
             return out
         out["day"] = out["day"].astype(int)
@@ -58,7 +73,7 @@ class DataLoader:
     def _read_trades(self, files: List[str]) -> pd.DataFrame:
         frames = []
         for f in files:
-            df = pd.read_csv(f)
+            df = self._read_csv_flexible(f)
             missing = [c for c in TRADE_REQUIRED if c not in df.columns]
             if missing:
                 raise ValueError(f"Trade file {f} missing columns: {missing}")
@@ -72,7 +87,7 @@ class DataLoader:
                 df["currency"] = "USD"
             df["symbol"] = df["symbol"].astype(str).str.upper()
             frames.append(df)
-        out = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        out = pd.concat(frames, ignore_index=True) if frames else self._empty_trade_frame()
         if out.empty:
             return out
         out["day"] = out["day"].astype(int)

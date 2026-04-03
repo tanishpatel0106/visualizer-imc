@@ -67,6 +67,8 @@ class PlatformService:
         return df.sort_values(["day", "timestamp"]).head(limit).to_dict(orient="records")
 
     def run_backtest(self, strategy_id: str, params: Dict[str, Any], execution_model: str, products: List[str], days: List[int]) -> Dict[str, Any]:
+        if not self.loader.loaded:
+            raise ValueError("No dataset loaded. Call /datasets/load first.")
         events = self.loader.build_events(products=products, days=days)
         if strategy_id.startswith("upload:"):
             run = self._run_uploaded(strategy_id, events, execution_model)

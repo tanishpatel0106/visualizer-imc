@@ -66,7 +66,10 @@ def trades(product: Optional[str] = None, day: Optional[int] = None, limit: int 
 
 @router.post("/backtest/run")
 def backtest_run(req: BacktestReq):
-    return svc.run_backtest(req.strategy_id, req.params, req.execution_model, req.products, req.days)
+    try:
+        return svc.run_backtest(req.strategy_id, req.params, req.execution_model, req.products, req.days)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.get("/backtest/{run_id}")

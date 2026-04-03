@@ -25,3 +25,20 @@ def test_orderbook_metrics():
     assert b.spread == 2
     assert b.bid_depth == 20
     assert b.ask_depth == 26
+
+
+def test_semicolon_csv_parsing_and_missing_trade_day(tmp_path):
+    p = tmp_path / "prices_round_0_day_-1.csv"
+    t = tmp_path / "trades_round_0_day_-1.csv"
+    p.write_text(
+        "day;timestamp;product;bid_price_1;bid_volume_1;ask_price_1;ask_volume_1\n"
+        "-1;0;EMERALDS;9992;14;10008;14\n"
+    )
+    t.write_text(
+        "timestamp;buyer;seller;symbol;currency;price;quantity\n"
+        "3200;;;EMERALDS;XIRECS;9992.0;8\n"
+    )
+    l = DataLoader()
+    b = l.load("semi", str(tmp_path))
+    assert list(b.prices["product"])[0] == "EMERALDS"
+    assert int(list(b.trades["day"])[0]) == 0

@@ -4,6 +4,8 @@ body,html,#root{margin:0;height:100%;background:#0c1017}
 .panel{background:#131a24;border:1px solid #1f2a3b;padding:8px;overflow:auto}
 .header{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .badge{background:#1f2a3b;padding:4px 8px;border-radius:4px;font-size:12px}
+.badge select{margin-left:6px;background:#0f1725;color:#e6edf3;border:1px solid #334155}
+.badge.error{background:#7c2d12}
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;min-height:250px}
 .bottom{grid-template-columns:1fr 2fr;min-height:260px;flex:1}
 .bid{color:#22c55e;display:inline-block;width:50%}.ask{color:#ef4444;display:inline-block;width:50%}

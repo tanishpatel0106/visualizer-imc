@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
+import re
 import pandas as pd
 
 from app.models.domain import Event, EventType
@@ -35,6 +36,10 @@ class DataLoader:
         # Tutorial datasets are frequently `;` separated; use sniffer-based parsing.
         return pd.read_csv(file_path, sep=None, engine="python")
 
+    def _infer_day_from_filename(self, file_path: str) -> int:
+        m = re.search(r"day_(-?\d+)", Path(file_path).name)
+        return int(m.group(1)) if m else 0
+
     def _empty_price_frame(self) -> pd.DataFrame:
         cols = PRICE_REQUIRED + [
             "bid_price_2", "bid_volume_2", "bid_price_3", "bid_volume_3",
@@ -51,6 +56,9 @@ class DataLoader:
         for f in files:
             df = self._read_csv_flexible(f)
             missing = [c for c in PRICE_REQUIRED if c not in df.columns]
+            if "day" in missing and len(missing) == 1:
+                df["day"] = self._infer_day_from_filename(f)
+                missing = []
             if missing:
                 raise ValueError(f"Price file {f} missing columns: {missing}")
             for level in [2, 3]:
@@ -78,7 +86,7 @@ class DataLoader:
             if missing:
                 raise ValueError(f"Trade file {f} missing columns: {missing}")
             if "day" not in df.columns:
-                df["day"] = 0
+                df["day"] = self._infer_day_from_filename(f)
             if "buyer" not in df.columns:
                 df["buyer"] = ""
             if "seller" not in df.columns:
@@ -96,6 +104,8 @@ class DataLoader:
 
     def load(self, dataset_id: str, directory: str) -> DatasetBundle:
         files = self.discover(directory)
+        if not files["prices"] and not files["trades"]:
+            raise ValueError(f"No CSV files found in {directory}. Expected prices*.csv and/or trades*.csv")
         prices = self._read_prices(files["prices"])
         trades = self._read_trades(files["trades"])
         self.loaded = DatasetBundle(dataset_id=dataset_id, base_path=Path(directory), prices=prices, trades=trades)

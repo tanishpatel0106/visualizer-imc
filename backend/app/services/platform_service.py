@@ -28,7 +28,11 @@ class PlatformService:
             self.repo.save_strategy(sid, "builtin", s.name, "", {"category": s.category, "description": s.description, "parameters": [p.model_dump() for p in s.parameters]})
 
     def load_dataset(self, dataset_id: str, path: str) -> Dict[str, Any]:
-        bundle = self.loader.load(dataset_id, path)
+        raw = Path(path)
+        repo_root = Path(__file__).resolve().parents[3]
+        candidates = [raw, repo_root / raw, repo_root / "sample_data"]
+        resolved = next((p for p in candidates if p.exists()), raw)
+        bundle = self.loader.load(dataset_id, str(resolved))
         self.replay_events = self.loader.build_events()
         self.replay.total_events = len(self.replay_events)
         return {"dataset_id": bundle.dataset_id, "prices": len(bundle.prices), "trades": len(bundle.trades)}

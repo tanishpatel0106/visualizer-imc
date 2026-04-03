@@ -1,6 +1,7 @@
 import pandas as pd
 from app.engines.data.loader import DataLoader
 from app.engines.orderbook.engine import OrderBookEngine
+import pytest
 
 
 def test_loader_schema_validation(tmp_path):
@@ -41,4 +42,10 @@ def test_semicolon_csv_parsing_and_missing_trade_day(tmp_path):
     l = DataLoader()
     b = l.load("semi", str(tmp_path))
     assert list(b.prices["product"])[0] == "EMERALDS"
-    assert int(list(b.trades["day"])[0]) == 0
+    assert int(list(b.trades["day"])[0]) == -1
+
+
+def test_load_raises_when_no_files(tmp_path):
+    l = DataLoader()
+    with pytest.raises(ValueError):
+        l.load("none", str(tmp_path))

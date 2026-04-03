@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+import pandas as pd
 
 from app.engines.backtest.engine import BacktestEngine
 from app.engines.data.loader import DataLoader
@@ -58,7 +59,7 @@ class PlatformService:
             df = df[df["product"] == product.upper()]
         if day is not None:
             df = df[df["day"] == day]
-        return df.sort_values(["day", "timestamp"]).head(limit).to_dict(orient="records")
+        return self._json_safe_records(df.sort_values(["day", "timestamp"]).head(limit))
 
     def trades(self, product: Optional[str] = None, day: Optional[int] = None, limit: int = 2000):
         if not self.loader.loaded:
@@ -68,7 +69,12 @@ class PlatformService:
             df = df[df["symbol"] == product.upper()]
         if day is not None:
             df = df[df["day"] == day]
-        return df.sort_values(["day", "timestamp"]).head(limit).to_dict(orient="records")
+        return self._json_safe_records(df.sort_values(["day", "timestamp"]).head(limit))
+
+    def _json_safe_records(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
+        # FastAPI/Starlette JSON encoder rejects NaN; convert to explicit nulls.
+        safe_df = df.astype(object).where(pd.notnull(df), None)
+        return safe_df.to_dict(orient="records")
 
     def run_backtest(self, strategy_id: str, params: Dict[str, Any], execution_model: str, products: List[str], days: List[int]) -> Dict[str, Any]:
         if not self.loader.loaded:
